@@ -1,1 +1,60 @@
+s = serial('COM3', 'BaudRate', 115200);
+fopen(s);
+pause(3);
+fprintf("Connection established\n")
 
+%armar gráfica
+plotTitle = 'Masa Resorte Amortiguador';     
+legend1 = 'Respuesta ARDUINO';
+yMax  = 1.6;                           
+yMin  = -1.6;                 
+min = -1.6;                       
+max = 1.6;
+delay = 1e-6;
+
+time = 0;
+data = 0;
+count = 0;
+
+plotGraph = plot(time,data,'-r' ,'LineWidth',3);
+title(plotTitle,'FontSize',20);
+legend(legend1)
+axis([yMin yMax min max]);
+
+
+tic
+startTimer = toc;
+theta=0:.3:2*pi;
+k=1;
+a=0;
+t=[];
+data=[];
+
+while (toc < startTimer+5)
+  fprintf(s, theta(k));
+  k=k+1;
+  t(count+1)=a;
+  data(count+1) = fscanf(s, '%f\n');
+  count = count + 1;
+  time(count) = toc;
+  a=a+0.0485;
+  set(plotGraph,'XData',t,'YData',data);
+  hold on
+     
+  axis([0 time(count) min max]);
+  pause(delay);
+  ylabel('x(t)'); xlabel('t (s)');
+    
+  if k==length(theta)
+      k=1;
+  end
+end
+
+% Display sample rate to user
+endTimer = toc;
+frequency=count/(endTimer - startTimer);
+fprintf("Sample rate was: %0.2f Hz\n",count/(endTimer - startTimer))
+% Remove serial port connection
+fclose(s);
+delete(s)
+clear s
