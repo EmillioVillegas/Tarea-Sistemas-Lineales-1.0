@@ -1,1 +1,56 @@
+s = serial("COM3", 'BaudRate', 9600); 
+fopen(s);
+pause(3);
+fprintf("Connection established\n")
 
+%armar gráfica
+plotTitle = 'Función Seno';
+xLabel = 'Tiempo (s)';     
+yLabel = 'Valor (V)';      
+legend1 = 'Función Senoidal' ;
+
+yMax  = 1.2;                           
+yMin  = -1.2;             
+
+plotGrid = 'on';                 
+min = -1.2;                       
+max = 1.2;
+delay = 1e-6;
+
+time = 0;
+data = 0;
+count = 0;
+
+plotGraph = plot(time,data,'-r' ,'LineWidth',2);
+title(plotTitle,'FontSize',20);
+xlabel(xLabel,'FontSize',15);
+ylabel(yLabel,'FontSize',15);
+legend(legend1)
+axis([yMin yMax min max]);
+grid(plotGrid);
+
+theta=0:0.32:2*pi;
+k=1;
+tic      
+startTimer = toc;
+while (toc < startTimer+10)
+    if k==length(theta)
+        k=1;
+    end
+    fprintf(s, theta(k));
+    k=k+1;
+    out = fscanf(s, '%f\n');
+
+    count = count + 1;
+    time(count) = toc;
+    data(count)= out;
+    set(plotGraph,'XData',time,'YData',data);
+    axis([0 time(count) min max]);
+    pause(delay);
+end
+
+endTimer = toc;
+fprintf("Sample rate was: %0.2f Hz\n",count/(endTimer - startTimer))
+fclose(s);
+delete(s);
+clear s;
